@@ -20,6 +20,7 @@
   "homepage": "https://github.com/e-leal/employee-tracker#readme",
   "dependencies": {
     "console.table": "^0.10.0",
+    "express": "^4.17.1",
     "inquire": "^0.4.8",
     "inquirer": "^7.3.3",
     "jest": "^26.2.2",
