@@ -80,6 +80,17 @@ viewAllDeps = () => {
     )
 }
 
+viewAllRoles = () => {
+    const query = connection.query(
+        "Select title, salary, name from role join department on department_id = department.id",
+        function(err, res){
+            if(err) throw err;
+            console.log(res);
+            connection.end();
+        }
+    )
+}
+
 
 viewEmpsByDept = () => {
     const query = connection.query(
