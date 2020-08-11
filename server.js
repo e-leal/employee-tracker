@@ -34,7 +34,7 @@ menuQuestions = () => {
         name: 'action',
         message: 'What would you like to do?\n',
         default: 'View All Employees',
-        choices: ['View All Employees', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager']
+        choices: ['View All Employees', 'View All Departments', 'View All Roles', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager']
     }])
     .then(choice => {
         determineAction(choice.action);
@@ -44,6 +44,10 @@ menuQuestions = () => {
 determineAction = decision => {
     if(decision === 'View All Employees'){
         viewAllEmps();
+    }else if(decision === 'View All Departments'){
+        viewAllDeps();
+    }else if(decision === 'View All Roles'){
+        viewAllRoles();
     }else if(decision === 'View All Employees By Department'){
         viewEmpsByDept();
     }else if(decision === 'View All Employees By Manager'){
@@ -64,6 +68,18 @@ viewAllEmps = () => {
         }
     );
 };
+
+viewAllDeps = () => {
+    const query = connection.query(
+        "Select name from department",
+        function(err, res){
+            if(err) throw err;
+            console.log(res);
+            connection.end();
+        }
+    )
+}
+
 
 viewEmpsByDept = () => {
     const query = connection.query(
