@@ -38,13 +38,6 @@ menuQuestions = () => {
     }])
     .then(choice => {
         determineAction(choice.action);
-        // if(choice.action === 'View All Employees'){
-        //     viewAllEmps();
-        //     //return menuQuestions();
-        // }else if(choice.action === 'View All Employees BY Department'){
-        //     viewEmpsByDept();
-        //     //return menuQuestions();
-        // }
     });
 };
 
@@ -53,8 +46,10 @@ determineAction = decision => {
         viewAllEmps();
     }else if(decision === 'View All Employees By Department'){
         viewEmpsByDept();
+    }else if(decision === 'View All Employees By Manager'){
+        viewEmpsByManager();
     }
-    return menuQuestions();
+    //return menuQuestions();
 }
 
 
@@ -100,6 +95,64 @@ viewEmpsByDept = () => {
             );
         }
     );
+};
+
+managerEmps = manager =>{
+    console.log("Our passed in value is: ", manager);
+    const manId = manager;
+    connection.query(
+        "select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where employee.?",
+        {
+            manager_id: manager
+        },
+        function(err, res){
+            if(err) throw err;
+            console.log(res);
+            connection.end();
+        }
+    );
+};
+
+viewEmpsByManager = () => {
+    const query = connection.query(
+        "select concat(emp1.first_name, ' ', emp1.last_name) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
+        function(err, res){
+            if(err) throw err;
+            const man = res;
+            console.log("our res is: ", res);
+            inquirer.prompt(
+                [{
+                    type: 'list',
+                    name: "managerChoice",
+                    message: "Which manager?\n",
+                    choices: man
+                }]
+            )
+            .then(selectManagerName => {
+                console.log("our inputed value is: ", selectManagerName.managerChoice.substring(0,selectManagerName.managerChoice.indexOf(' ')));
+                console.log("our last_name is read as: ", selectManagerName.managerChoice.substring(selectManagerName.managerChoice.indexOf(' ')+1, selectManagerName.managerChoice.length));
+                const first = selectManagerName.managerChoice.substring(0,selectManagerName.managerChoice.indexOf(' '));
+                const last = selectManagerName.managerChoice.substring(selectManagerName.managerChoice.indexOf(' ')+1, selectManagerName.managerChoice.length);
+                connection.query(
+                     "select id from employee where first_name = '"+first+"' and last_name = '"+last+"'",
+                     function(err, res){
+                         if(err) throw err;
+                         
+                         const manager = res[0].id;
+                         connection.query(
+                            "select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where emp.id ='"+manager+"'",
+                            function(err, res1){
+                                if(err) throw err;
+                                console.log(res1);
+                                connection.end();
+                            }
+                        );
+                     }
+                 );
+            });
+        }
+    );
+    
 };
 
 menuQuestions();
