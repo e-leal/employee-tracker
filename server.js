@@ -5,6 +5,7 @@ const express = require('express');
 const inquirer = require('inquirer');
 const fs = require('fs');
 const Employee = require('./lib/Employee');
+const { forInStatement } = require('@babel/types');
 const PORT = process.env || 3001;
 const app = express();
 
@@ -34,7 +35,7 @@ menuQuestions = () => {
         name: 'action',
         message: 'What would you like to do?\n',
         default: 'View All Employees',
-        choices: ['View All Employees', 'View All Departments', 'View All Roles', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager']
+        choices: ['View All Employees', 'View All Departments', 'View All Roles', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Add Role', 'Add Department', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager']
     }])
     .then(choice => {
         determineAction(choice.action);
@@ -52,6 +53,8 @@ determineAction = decision => {
         viewEmpsByDept();
     }else if(decision === 'View All Employees By Manager'){
         viewEmpsByManager();
+    }else if(decision === 'Add Employee'){
+        addEmployee();
     }
     //return menuQuestions();
 }
@@ -181,6 +184,87 @@ viewEmpsByManager = () => {
     );
     
 };
+
+getManList = () =>{
+    let manList = [];
+    const query = connection.query(
+        "select concat(emp1.first_name, ' ', emp1.last_name) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
+        function(err, res){
+            if(err) throw err;
+            manList = res;
+            connection.end();
+            return manList;
+        }
+    );
+};
+
+getRoleList = () => {
+    let roleList = [];
+    const query2 = connection.query(
+        "Select title from role",
+        function(err, res){
+            if(err) throw err;
+            roleList = res;
+            console.log("our available titles ", roleList);
+            connection.end();
+            return roleList;
+        }
+    );
+}
+
+addEmployee = () => {
+    const manList = [];
+    const roles  = [];
+    //console.log("our role list is: ", roles);
+    connection.query(
+        "Select title from role",
+        function(err, res){
+            if(err) throw err;
+            for( let i = 0; i < res.length; i++){
+                roles.push(res[i].title);
+            }
+           // console.log("our available titles ", roles);
+            connection.end();
+    })
+    connection.query(
+        "select concat(emp1.first_name, ' ', emp1.last_name) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
+        function(err, res){
+            if(err) throw err;
+            for(let i = 0; i < res.length; i++){
+                manList.push(res[i].name);
+            }
+            connection.end();
+        }
+    )
+    console.log("our available roles are: ",roles);
+    inquirer.prompt([{
+        type: 'input',
+        name: 'firstN',
+        message: "Enter Employee's first name: ",
+    },
+    {
+        type: 'input',
+        name: 'lastN',
+        message: "Enter employee's last name: "
+    },
+    {
+        type: 'list',
+        name: 'roleChoice',
+        message: "Select employee's role: ",
+        choices: roles
+    },
+    {
+        type: 'list',
+        name: 'manChoice',
+        message: "Select employee's manager: ",
+        choices: manList
+    }])
+    .then(empData =>{
+        const manager = empData.manChoice;
+        const rolePick = empData.roleChoice;
+        console.log("our picks: ", manager, " &&& ", rolePick);
+    });
+}
 
 menuQuestions();
 
