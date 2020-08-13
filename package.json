@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node server.js",
-    "migrate": "mysql2 db/employee.db < db/schema.sql"
+    "migrate": "mysql -u root -p source db/schema.sql",
+    "seed": "mysql -u root -p source db/seed.sql"
   },
   "repository": {
     "type": "git",
@@ -21,6 +22,7 @@
   "dependencies": {
     "console.table": "^0.10.0",
     "express": "^4.17.1",
+    "fs": "0.0.1-security",
     "inquire": "^0.4.8",
     "inquirer": "^7.3.3",
     "jest": "^26.2.2",

@@ -13,13 +13,15 @@ const app = express();
 app.use(express.urlencoded({ extended: false}));
 app.use(express.json());
 
+const dbPassword = '';
+
 const connection = mysql.createConnection({
     host: 'localhost',
     port: 3306,
     // MySQL Username
     user: 'root',
     //mySQL password
-    password: '',
+    password: dbPassword,
     database: 'employee_recordDB'
 });
 
@@ -35,7 +37,7 @@ menuQuestions = () => {
         name: 'action',
         message: 'What would you like to do?\n',
         default: 'View All Employees',
-        choices: ['View All Employees', 'View All Departments', 'View All Roles', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Add Role', 'Add Department', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager']
+        choices: ['View All Employees', 'View All Departments', 'View All Roles', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Add Role', 'Add Department', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager', 'View Budget By Department']
     }])
     .then(choice => {
         determineAction(choice.action);
@@ -73,6 +75,9 @@ determineAction = decision => {
             break;
         case 'Update Employee Manager':
             updateManager();
+            break;
+        case 'View Budget By Department':
+            viewBudget();
             break;
         default: break;
     }
@@ -257,7 +262,7 @@ addEmployee = () => {
             // MySQL Username
             user: 'root',
             //mySQL password
-            password: '',
+            password: dbPassword,
             database: 'employee_recordDB'
         });
         
@@ -357,7 +362,7 @@ addRole = () =>{
             // MySQL Username
             user: 'root',
             //mySQL password
-            password: '',
+            password: dbPassword,
             database: 'employee_recordDB'
         });
         
@@ -422,7 +427,7 @@ updateRole = () =>{
                             // MySQL Username
                             user: 'root',
                             //mySQL password
-                            password: '',
+                            password: dbPassword,
                             database: 'employee_recordDB'
                         });
                         
@@ -482,7 +487,7 @@ updateManager = () =>{
                     // MySQL Username
                     user: 'root',
                     //mySQL password
-                    password: '',
+                    password: dbPassword,
                     database: 'employee_recordDB'
                 });
                         
@@ -510,7 +515,7 @@ updateManager = () =>{
                                 // MySQL Username
                                 user: 'root',
                                 //mySQL password
-                                password: '',
+                                password: dbPassword,
                                 database: 'employee_recordDB'
                             })
                                     
@@ -543,6 +548,38 @@ updateManager = () =>{
         }
     )  
 }
+
+viewBudget = () => {
+    const query = connection.query(
+        "select name from department",
+        function(err, res){
+            if(err) throw err;
+            const depts = res;
+            inquirer.prompt(
+                [{
+                    type: 'list',
+                    name: "deptChoice",
+                    message: "Which department?\n",
+                    choices: res
+                }]
+            )
+            .then(selectDep => {
+                connection.query(
+                    "select SUM(salary) budget from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where ?",
+                    {
+                        name: selectDep.deptChoice,
+                    },
+                    function(err, res){
+                        if(err) throw err;
+                        console.log(res);
+                        connection.end();
+                    }
+                );
+            }
+            );
+        }
+    );
+};
 
 menuQuestions();
 
