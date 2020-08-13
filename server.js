@@ -5,7 +5,7 @@ const express = require('express');
 const inquirer = require('inquirer');
 const fs = require('fs');
 const Employee = require('./lib/Employee');
-const { forInStatement } = require('@babel/types');
+const { forInStatement, tsConstructSignatureDeclaration } = require('@babel/types');
 const PORT = process.env || 3001;
 const app = express();
 
@@ -68,26 +68,12 @@ determineAction = decision => {
         case 'Add Role':
             addRole();
             break;
+        case 'Update Employee Role':
+            updateRole();
+            break;
         default: break;
     }
 } 
-
-
-//     if(decision === 'View All Employees'){
-//         viewAllEmps();
-//     }else if(decision === 'View All Departments'){
-//         viewAllDeps();
-//     }else if(decision === 'View All Roles'){
-//         viewAllRoles();
-//     }else if(decision === 'View All Employees By Department'){
-//         viewEmpsByDept();
-//     }else if(decision === 'View All Employees By Manager'){
-//         viewEmpsByManager();
-//     }else if(decision === 'Add Employee'){
-//         addEmployee();
-//     }
-//     //return menuQuestions();
-// }
 
 
 
@@ -214,7 +200,6 @@ viewEmpsByManager = () => {
     );
     
 };
-
 
 addEmployee = () => {
     const manList = [];
@@ -392,9 +377,80 @@ addRole = () =>{
                 )
             }
         )
-
-        
     });
+}
+
+updateRole = () =>{
+    const empList = [];
+    const roleList = [];
+    let chosenRoleId = 0;
+    connection.query(
+        "Select concat(first_name, ' ', last_name) name from employee",
+        function(err, res){
+            if(err) throw err;
+            for( let i = 0; i < res.length; i++){
+                empList.push(res[i].name);
+            }
+            //console.log("our available employees: ", empList);
+            connection.query(
+                "select title from role",
+                function(err, res){
+                    if(err) throw err;
+                    for(let i = 0; i< res.length; i++){
+                        roleList.push(res[i].title);
+                    }
+                    inquirer.prompt([{
+                        type: 'list',
+                        name: 'empChoice',
+                        message: 'Select employee to update their role: ',
+                        choices: empList
+                    },
+                    {
+                        type: 'list',
+                        name: 'roleChoice',
+                        message: 'Select a role for the employee: ',
+                        choices: roleList   
+                    }])
+                    .then(newData => {
+                        const first = newData.empChoice.substring(0,newData.empChoice.indexOf(' '));
+                        const last = newData.empChoice.substring(newData.empChoice.indexOf(' ')+1, newData.empChoice.length)
+                        const connection = mysql.createConnection({
+                            host: 'localhost',
+                            port: 3306,
+                            // MySQL Username
+                            user: 'root',
+                            //mySQL password
+                            password: '',
+                            database: 'employee_recordDB'
+                        });
+                        
+                        connection.connect(err => {
+                            if (err) throw err;
+                            console.log('Connected as id '+ connection.threadId + '\n');
+                        });
+                        connection.query(
+                            "select id from role where title = '"+newData.roleChoice+"'",
+                            function(err, res){
+                                if(err) throw err;
+                                chosenRoleId = res[0].id;
+                                connection.query(
+                                    "update employee set role_id = "+chosenRoleId+" where first_name = '"+first+"' and last_name = '"+last+"'",
+                                    function(err, res){
+                                        if(err) throw err;
+                                        console.log("Successfully updated employee's role!")
+                                        connection.end()
+                                    }
+                                )
+                                connection.end();
+                            }
+
+                        )
+                
+                    })
+                }
+            )
+    });
+    
 }
 
 menuQuestions();
