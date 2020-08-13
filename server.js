@@ -71,6 +71,9 @@ determineAction = decision => {
         case 'Update Employee Role':
             updateRole();
             break;
+        case 'Update Employee Manager':
+            updateManager();
+            break;
         default: break;
     }
 } 
@@ -109,7 +112,6 @@ viewAllRoles = () => {
         }
     )
 }
-
 
 viewEmpsByDept = () => {
     const query = connection.query(
@@ -451,6 +453,95 @@ updateRole = () =>{
             )
     });
     
+}
+
+updateManager = () =>{
+    const empList = [];
+    const manList = [];
+    let choseneId = 0;
+    connection.query(
+        "Select concat(first_name, ' ', last_name) name from employee",
+        function(err, res){
+            if(err) throw err;
+            for( let i = 0; i < res.length; i++){
+                empList.push(res[i].name);
+            }
+            //console.log("our available employees: ", empList);
+            inquirer.prompt([{
+                type: 'list',
+                name: 'empChoice',
+                message: "Which employee's manager would you like to update?",
+                choices: empList
+            }])
+            .then(newData => {
+                const first = newData.empChoice.substring(0,newData.empChoice.indexOf(' '));
+                const last = newData.empChoice.substring(newData.empChoice.indexOf(' ')+1, newData.empChoice.length)
+                const connection = mysql.createConnection({
+                    host: 'localhost',
+                    port: 3306,
+                    // MySQL Username
+                    user: 'root',
+                    //mySQL password
+                    password: '',
+                    database: 'employee_recordDB'
+                });
+                        
+                connection.connect(err => {
+                    if (err) throw err;
+                    console.log('Connected as id '+ connection.threadId + '\n');
+                });
+                connection.query(
+                    "select concat(first_name, ' ', last_name) name from employee where (first_name != '"+first+"' and last_name != '"+last+"')",
+                    function(err, res){
+                        if(err) throw err;
+                        for(let i = 0; i< res.length; i++){
+                            manList.push(res[i].name)
+                        } 
+                        inquirer.prompt([{
+                            type: 'list',
+                            name: 'manChoice',
+                            message: "Which employee would you like to set as the manager?",
+                            choices: manList
+                        }])
+                        .then(manData => {
+                            const connection = mysql.createConnection({
+                                host: 'localhost',
+                                port: 3306,
+                                // MySQL Username
+                                user: 'root',
+                                //mySQL password
+                                password: '',
+                                database: 'employee_recordDB'
+                            })
+                                    
+                            connection.connect(err => {
+                                if (err) throw err;
+                                console.log('Connected as id '+ connection.threadId + '\n');
+                            });
+                            const manFirst = manData.manChoice.substring(0, manData.manChoice.indexOf(' '));
+                            const manLast = manData.manChoice.substring(manData.manChoice.indexOf(' ')+1, manData.manChoice.length);
+
+                            connection.query(
+                                "select id from employee where first_name = '"+manFirst+"' and last_name = '"+manLast+"'",
+                                function(err, res){
+                                    if(err) throw err;
+                                    choseneId = res[0].id;
+                                    connection.query(
+                                        "update employee set manager_id ="+choseneId+" where first_name = '"+first+"' and last_name = '"+last+"'",
+                                        function(err, res){
+                                            if(err) throw err;
+                                            console.log("we updated a manager!");
+                                                connection.end();
+                                        }
+                                    )
+                                }
+                            )
+                        })               
+                    }
+                )
+            })
+        }
+    )  
 }
 
 menuQuestions();
