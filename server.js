@@ -43,21 +43,51 @@ menuQuestions = () => {
 };
 
 determineAction = decision => {
-    if(decision === 'View All Employees'){
-        viewAllEmps();
-    }else if(decision === 'View All Departments'){
-        viewAllDeps();
-    }else if(decision === 'View All Roles'){
-        viewAllRoles();
-    }else if(decision === 'View All Employees By Department'){
-        viewEmpsByDept();
-    }else if(decision === 'View All Employees By Manager'){
-        viewEmpsByManager();
-    }else if(decision === 'Add Employee'){
-        addEmployee();
+    switch(decision){
+        case 'View All Employees':
+            viewAllEmps();
+            break;
+        case 'View All Departments':
+            viewAllDeps();
+            break;
+        case 'View All Roles':
+            viewAllRoles();
+            break;
+        case 'View All Employees By Department':
+            viewEmpsByDept();
+            break;
+        case 'View All Employees By Manager':
+            viewEmpsByManager();
+            break;
+        case 'Add Employee':
+            addEmployee();
+            break;
+        case 'Add Department':
+            addDepartment();
+            break;
+        case 'Add Role':
+            addRole();
+            break;
+        default: break;
     }
-    //return menuQuestions();
-}
+} 
+
+
+//     if(decision === 'View All Employees'){
+//         viewAllEmps();
+//     }else if(decision === 'View All Departments'){
+//         viewAllDeps();
+//     }else if(decision === 'View All Roles'){
+//         viewAllRoles();
+//     }else if(decision === 'View All Employees By Department'){
+//         viewEmpsByDept();
+//     }else if(decision === 'View All Employees By Manager'){
+//         viewEmpsByManager();
+//     }else if(decision === 'Add Employee'){
+//         addEmployee();
+//     }
+//     //return menuQuestions();
+// }
 
 
 
@@ -145,7 +175,7 @@ managerEmps = manager =>{
 
 viewEmpsByManager = () => {
     const query = connection.query(
-        "select concat(emp1.first_name, ' ', emp1.last_name) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
+        "select distinct(concat(emp1.first_name, ' ', emp1.last_name)) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
         function(err, res){
             if(err) throw err;
             const man = res;
@@ -201,7 +231,7 @@ addEmployee = () => {
             connection.end();
     })
     connection.query(
-        "select concat(emp1.first_name, ' ', emp1.last_name) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
+        "select distinct(concat(emp1.first_name, ' ', emp1.last_name) ) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
         function(err, res){
             if(err) throw err;
             for(let i = 0; i < res.length; i++){
@@ -283,6 +313,86 @@ addEmployee = () => {
         );
         
         //console.log("Insert into employee (first_name, last_name, role_id, manager_id) values ('"+empData.firstN+"', '"+empData.lastN+"', "+roleId+", "+manId+")");
+        
+    });
+}
+
+addDepartment = () =>{
+    inquirer.prompt([{
+        type: 'input',
+        name: 'newDept',
+        message: 'Enter deparmtent name: '
+    }])
+    .then(addDept => {
+        connection.query(
+            "Insert into department (name) values ('"+addDept.newDept+"')",
+            function(err, res){
+                if(err) throw err;
+                console.log("Succesfully added new department!");
+                connection.end();
+            }
+        )
+    });
+}
+
+addRole = () =>{
+    const deptList = [];
+    connection.query(
+        "Select name from department",
+        function(err, res){
+            if(err) throw err;
+            for( let i = 0; i < res.length; i++){
+                deptList.push(res[i].name);
+            }
+            console.log("our available departments: ", deptList);
+            connection.end();
+    });
+    inquirer.prompt([{
+        type: 'input',
+        name: 'newRole',
+        message: 'Enter Role name: '
+    },
+    {
+       type:  'number',
+       name: 'newSal',
+       message: 'Enter salary for new role: $'
+    },
+    {
+        type: 'list',
+        name: 'newDept',
+        message: 'Select department for new role: ',
+        choices: deptList
+    }])
+    .then(addDept => {
+        const connection = mysql.createConnection({
+            host: 'localhost',
+            port: 3306,
+            // MySQL Username
+            user: 'root',
+            //mySQL password
+            password: '',
+            database: 'employee_recordDB'
+        });
+        
+        connection.connect(err => {
+            if (err) throw err;
+            console.log('Connected as id '+ connection.threadId + '\n');
+        });
+        connection.query(
+            "select id from department where name ='"+addDept.newDept+"'",
+            function(err, res){
+                if(err) throw err;
+                connection.query(
+                    "Insert into role (title, salary, department_id) values ('"+addDept.newRole+"', "+addDept.newSal+", "+res[0].id+")",
+                    function(err, res){
+                        if(err) throw err;
+                        console.log("Succesfully added new role!");
+                        connection.end();
+                    }
+                )
+            }
+        )
+
         
     });
 }
