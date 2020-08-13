@@ -79,6 +79,9 @@ determineAction = decision => {
         case 'View Budget By Department':
             viewBudget();
             break;
+        case 'Remove Employee':
+            removeEmp();
+            break;
         default: break;
     }
 } 
@@ -580,6 +583,54 @@ viewBudget = () => {
         }
     );
 };
+
+
+removeEmp = () =>{
+    const empList = [];
+    let choseneId = 0;
+    connection.query(
+        "Select concat(first_name, ' ', last_name) name from employee",
+        function(err, res){
+            if(err) throw err;
+            for( let i = 0; i < res.length; i++){
+                empList.push(res[i].name);
+            }
+            //console.log("our available employees: ", empList);
+            inquirer.prompt([{
+                type: 'list',
+                name: 'empChoice',
+                message: "Which employee's manager would you like to remove?",
+                choices: empList
+            }])
+            .then(newData => {
+                const first = newData.empChoice.substring(0,newData.empChoice.indexOf(' '));
+                const last = newData.empChoice.substring(newData.empChoice.indexOf(' ')+1, newData.empChoice.length)
+                const connection = mysql.createConnection({
+                    host: 'localhost',
+                    port: 3306,
+                    // MySQL Username
+                    user: 'root',
+                    //mySQL password
+                    password: dbPassword,
+                    database: 'employee_recordDB'
+                });
+                        
+                connection.connect(err => {
+                    if (err) throw err;
+                    console.log('Connected as id '+ connection.threadId + '\n');
+                });
+                connection.query(
+                    "delete from employee where first_name = '"+first+"' and last_name = '"+last+"'",
+                    function(err, res){
+                        if(err) throw err;
+                        console.log("we've removed the employee!!");
+                        connection.end();              
+                    }
+                )
+            })
+        }
+    )  
+}
 
 menuQuestions();
 
