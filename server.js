@@ -1,11 +1,8 @@
 const mysql = require('mysql2');
-const db = require('./db/database');
-const questions = require('./lib/index')
+const index = require('./lib/index')
 const express = require('express');
 const inquirer = require('inquirer');
 const fs = require('fs');
-const Employee = require('./lib/Employee');
-const { forInStatement, tsConstructSignatureDeclaration } = require('@babel/types');
 const PORT = process.env || 3001;
 const app = express();
 
@@ -27,11 +24,22 @@ const connection = mysql.createConnection({
 
 connection.connect(err => {
     if (err) throw err;
-    console.log('Connected as id '+ connection.threadId + '\n');
 });
 
-
 menuQuestions = () => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     return inquirer.prompt([{
         type: 'list',
         name: 'action',
@@ -40,8 +48,8 @@ menuQuestions = () => {
         choices: ['View All Employees', 'View All Departments', 'View All Roles', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Add Role', 'Add Department', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager', 'View Budget By Department']
     }])
     .then(choice => {
-        determineAction(choice.action);
-    });
+        determineAction(choice.action)   
+    })
 };
 
 determineAction = decision => {
@@ -84,22 +92,49 @@ determineAction = decision => {
             break;
         default: break;
     }
+    menuQuestions();
 } 
 
 
 
 viewAllEmps = () => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const query = connection.query(
         "Select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id",
         function(err, res){
             if(err) throw err;
             console.log(res);
-            connection.end();
+            connection.end()
         }
     );
 };
 
 viewAllDeps = () => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const query = connection.query(
         "Select name from department",
         function(err, res){
@@ -111,17 +146,43 @@ viewAllDeps = () => {
 }
 
 viewAllRoles = () => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const query = connection.query(
         "Select title, salary, name from role join department on department_id = department.id",
         function(err, res){
             if(err) throw err;
             console.log(res);
-            connection.end();
+            connection.end()
         }
     )
 }
 
 viewEmpsByDept = () => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const query = connection.query(
         "select name from department",
         function(err, res){
@@ -144,7 +205,7 @@ viewEmpsByDept = () => {
                     function(err, res){
                         if(err) throw err;
                         console.log(res);
-                        connection.end();
+                        connection.end()
                     }
                 );
             }
@@ -154,7 +215,6 @@ viewEmpsByDept = () => {
 };
 
 managerEmps = manager =>{
-    console.log("Our passed in value is: ", manager);
     const manId = manager;
     connection.query(
         "select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where employee.?",
@@ -164,12 +224,25 @@ managerEmps = manager =>{
         function(err, res){
             if(err) throw err;
             console.log(res);
-            connection.end();
+            connection.end()
         }
     );
 };
 
 viewEmpsByManager = () => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const query = connection.query(
         "select distinct(concat(emp1.first_name, ' ', emp1.last_name)) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
         function(err, res){
@@ -212,6 +285,19 @@ viewEmpsByManager = () => {
 };
 
 addEmployee = () => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const manList = [];
     const roles  = [];
     //console.log("our role list is: ", roles);
@@ -223,7 +309,7 @@ addEmployee = () => {
                 roles.push(res[i].title);
             }
            // console.log("our available titles ", roles);
-            connection.end();
+           // connection.end();
     })
     connection.query(
         "select distinct(concat(emp1.first_name, ' ', emp1.last_name) ) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
@@ -232,7 +318,7 @@ addEmployee = () => {
             for(let i = 0; i < res.length; i++){
                 manList.push(res[i].name);
             }
-            connection.end();
+           // connection.end();
         }
     )
     console.log("our available roles are: ",roles);
@@ -271,7 +357,6 @@ addEmployee = () => {
         
         connection.connect(err => {
             if (err) throw err;
-            console.log('Connected as id '+ connection.threadId + '\n');
         });
         const manager = empData.manChoice;
         const rolePick = empData.roleChoice;
@@ -287,7 +372,6 @@ addEmployee = () => {
             function(err, res){
                 if(err) throw err;
                 roleId = res[0].id
-                console.log("Role ID: ", roleId);
                 connection.query(
                     "select id from employee where first_name ='"+first+"' and last_name = '"+last+"'",
                     function(err, res){
@@ -298,7 +382,6 @@ addEmployee = () => {
                             "Insert into employee (first_name, last_name, role_id, manager_id) values ('"+empData.firstN+"', '"+empData.lastN+"', "+roleId+", "+manId+")",
                             function(err, res){
                                 if(err) throw err
-                                console.log("we've updated our employee table!")
                                 connection.end()
                             }
                         );
@@ -313,6 +396,19 @@ addEmployee = () => {
 }
 
 addDepartment = () =>{
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     inquirer.prompt([{
         type: 'input',
         name: 'newDept',
@@ -331,6 +427,19 @@ addDepartment = () =>{
 }
 
 addRole = () =>{
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const deptList = [];
     connection.query(
         "Select name from department",
@@ -339,7 +448,6 @@ addRole = () =>{
             for( let i = 0; i < res.length; i++){
                 deptList.push(res[i].name);
             }
-            console.log("our available departments: ", deptList);
             connection.end();
     });
     inquirer.prompt([{
@@ -371,7 +479,6 @@ addRole = () =>{
         
         connection.connect(err => {
             if (err) throw err;
-            console.log('Connected as id '+ connection.threadId + '\n');
         });
         connection.query(
             "select id from department where name ='"+addDept.newDept+"'",
@@ -381,7 +488,6 @@ addRole = () =>{
                     "Insert into role (title, salary, department_id) values ('"+addDept.newRole+"', "+addDept.newSal+", "+res[0].id+")",
                     function(err, res){
                         if(err) throw err;
-                        console.log("Succesfully added new role!");
                         connection.end();
                     }
                 )
@@ -391,6 +497,19 @@ addRole = () =>{
 }
 
 updateRole = () =>{
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const empList = [];
     const roleList = [];
     let chosenRoleId = 0;
@@ -436,7 +555,6 @@ updateRole = () =>{
                         
                         connection.connect(err => {
                             if (err) throw err;
-                            console.log('Connected as id '+ connection.threadId + '\n');
                         });
                         connection.query(
                             "select id from role where title = '"+newData.roleChoice+"'",
@@ -464,6 +582,19 @@ updateRole = () =>{
 }
 
 updateManager = () =>{
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const empList = [];
     const manList = [];
     let choseneId = 0;
@@ -496,7 +627,6 @@ updateManager = () =>{
                         
                 connection.connect(err => {
                     if (err) throw err;
-                    console.log('Connected as id '+ connection.threadId + '\n');
                 });
                 connection.query(
                     "select concat(first_name, ' ', last_name) name from employee where (first_name != '"+first+"' and last_name != '"+last+"')",
@@ -524,7 +654,6 @@ updateManager = () =>{
                                     
                             connection.connect(err => {
                                 if (err) throw err;
-                                console.log('Connected as id '+ connection.threadId + '\n');
                             });
                             const manFirst = manData.manChoice.substring(0, manData.manChoice.indexOf(' '));
                             const manLast = manData.manChoice.substring(manData.manChoice.indexOf(' ')+1, manData.manChoice.length);
@@ -538,7 +667,6 @@ updateManager = () =>{
                                         "update employee set manager_id ="+choseneId+" where first_name = '"+first+"' and last_name = '"+last+"'",
                                         function(err, res){
                                             if(err) throw err;
-                                            console.log("we updated a manager!");
                                                 connection.end();
                                         }
                                     )
@@ -553,6 +681,19 @@ updateManager = () =>{
 }
 
 viewBudget = () => {
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const query = connection.query(
         "select name from department",
         function(err, res){
@@ -586,6 +727,19 @@ viewBudget = () => {
 
 
 removeEmp = () =>{
+    const connection = mysql.createConnection({
+        host: 'localhost',
+        port: 3306,
+        // MySQL Username
+        user: 'root',
+        //mySQL password
+        password: dbPassword,
+        database: 'employee_recordDB'
+    });
+    
+    connection.connect(err => {
+        if (err) throw err;
+    });
     const empList = [];
     let choseneId = 0;
     connection.query(
@@ -617,13 +771,11 @@ removeEmp = () =>{
                         
                 connection.connect(err => {
                     if (err) throw err;
-                    console.log('Connected as id '+ connection.threadId + '\n');
                 });
                 connection.query(
                     "delete from employee where first_name = '"+first+"' and last_name = '"+last+"'",
                     function(err, res){
                         if(err) throw err;
-                        console.log("we've removed the employee!!");
                         connection.end();              
                     }
                 )
