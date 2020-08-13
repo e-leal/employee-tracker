@@ -185,32 +185,6 @@ viewEmpsByManager = () => {
     
 };
 
-getManList = () =>{
-    let manList = [];
-    const query = connection.query(
-        "select concat(emp1.first_name, ' ', emp1.last_name) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
-        function(err, res){
-            if(err) throw err;
-            manList = res;
-            connection.end();
-            return manList;
-        }
-    );
-};
-
-getRoleList = () => {
-    let roleList = [];
-    const query2 = connection.query(
-        "Select title from role",
-        function(err, res){
-            if(err) throw err;
-            roleList = res;
-            console.log("our available titles ", roleList);
-            connection.end();
-            return roleList;
-        }
-    );
-}
 
 addEmployee = () => {
     const manList = [];
@@ -260,9 +234,56 @@ addEmployee = () => {
         choices: manList
     }])
     .then(empData =>{
+        const connection = mysql.createConnection({
+            host: 'localhost',
+            port: 3306,
+            // MySQL Username
+            user: 'root',
+            //mySQL password
+            password: '',
+            database: 'employee_recordDB'
+        });
+        
+        connection.connect(err => {
+            if (err) throw err;
+            console.log('Connected as id '+ connection.threadId + '\n');
+        });
         const manager = empData.manChoice;
         const rolePick = empData.roleChoice;
-        console.log("our picks: ", manager, " &&& ", rolePick);
+        const first = manager.substring(0,manager.indexOf(' '));
+        const last = manager.substring(manager.indexOf(' ')+1, manager.length);
+        let manId = 0;
+        let roleId = 0;
+        connection.query(
+            'select id from role where ?',
+            {
+                title: rolePick
+            },
+            function(err, res){
+                if(err) throw err;
+                roleId = res[0].id
+                console.log("Role ID: ", roleId);
+                connection.query(
+                    "select id from employee where first_name ='"+first+"' and last_name = '"+last+"'",
+                    function(err, res){
+                        if(err) throw err;
+                        console.log(res[0].id);
+                        manId = res[0].id;
+                        connection.query(
+                            "Insert into employee (first_name, last_name, role_id, manager_id) values ('"+empData.firstN+"', '"+empData.lastN+"', "+roleId+", "+manId+")",
+                            function(err, res){
+                                if(err) throw err
+                                console.log("we've updated our employee table!")
+                                connection.end()
+                            }
+                        );
+                    }
+                )
+            }
+        );
+        
+        //console.log("Insert into employee (first_name, last_name, role_id, manager_id) values ('"+empData.firstN+"', '"+empData.lastN+"', "+roleId+", "+manId+")");
+        
     });
 }
 
