@@ -10,7 +10,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false}));
 app.use(express.json());
 
-const dbPassword = '';
+const dbPassword = 'Mar00nday03';
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -29,51 +29,51 @@ determineAction = decision => {
     switch(decision){
         case 'View All Employees':
             viewAllEmps()
-            .then(menuQuestions());
+            //.then(menuQuestions());
             break;
         case 'View All Departments':
             viewAllDeps()
-            .then(menuQuestions());
+           // .then(menuQuestions());
             break;
         case 'View All Roles':
             viewAllRoles()
-            .then(menuQuestions());
+          //  .then(menuQuestions());
             break;
         case 'View All Employees By Department':
             viewEmpsByDept()
-            .then(menuQuestions());
+          //  .then(menuQuestions());
             break;
         case 'View All Employees By Manager':
             viewEmpsByManager()
-            .then(menuQuestions());
+        ///    .then(menuQuestions());
             break;
         case 'Add Employee':
             addEmployee()
-            .then(menuQuestions());
+         //   .then(menuQuestions());
             break;
         case 'Add Department':
             addDepartment()
-            .then(menuQuestions());
+         //   .then(menuQuestions());
             break;
         case 'Add Role':
             addRole()
-            .then(menuQuestions());
+         //   .then(menuQuestions());
             break;
         case 'Update Employee Role':
             updateRole()
-            .then(menuQuestions());
+          //  .then(menuQuestions());
             break;
         case 'Update Employee Manager':
             updateManager()
-            .then(menuQuestions());
+          ///  .then(menuQuestions());
             break;
         case 'View Budget By Department':
             viewBudget()
-            .then(menuQuestions());
+        //    .then(menuQuestions());
             break;
         case 'Remove Employee':
             removeEmp()
-            .then(menuQuestions());
+          //  .then(menuQuestions());
             break;
         default: break;
     }
@@ -332,8 +332,6 @@ viewEmpsByManager = () => {
                 }]
             )
             .then(selectManagerName => {
-                console.log("our inputed value is: ", selectManagerName.managerChoice.substring(0,selectManagerName.managerChoice.indexOf(' ')));
-                console.log("our last_name is read as: ", selectManagerName.managerChoice.substring(selectManagerName.managerChoice.indexOf(' ')+1, selectManagerName.managerChoice.length));
                 const first = selectManagerName.managerChoice.substring(0,selectManagerName.managerChoice.indexOf(' '));
                 const last = selectManagerName.managerChoice.substring(selectManagerName.managerChoice.indexOf(' ')+1, selectManagerName.managerChoice.length);
                 connection.query(
@@ -347,7 +345,8 @@ viewEmpsByManager = () => {
                             function(err, res1){
                                 if(err) throw err;
                                 console.log('\n')
-                                console.table(res)
+                                console.log("printing out our employee by manager table \n")
+                                console.table(res1)
                                 connection.end();
                                 menuQuestions();
                             }
