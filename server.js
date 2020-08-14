@@ -115,7 +115,10 @@ viewAllEmps = () => {
         "Select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id",
         function(err, res){
             if(err) throw err;
-            console.log(res);
+            console.log('\n')
+            console.table(res)
+            //connection.writeTextRow(rows)
+           // console.log(data);
             connection.end()
         }
     );
@@ -135,11 +138,13 @@ viewAllDeps = () => {
     connection.connect(err => {
         if (err) throw err;
     });
+    const option = {sql:"select name from department", rowsAsArray: true};
     const query = connection.query(
-        "Select name from department",
+        option, 
         function(err, res){
             if(err) throw err;
-            console.log(res);
+            console.log('\n')
+            console.table(res)
             connection.end();
         }
     )
@@ -163,7 +168,8 @@ viewAllRoles = () => {
         "Select title, salary, name from role join department on department_id = department.id",
         function(err, res){
             if(err) throw err;
-            console.log(res);
+            console.log('\n')
+            console.table(res)
             connection.end()
         }
     )
@@ -204,7 +210,8 @@ viewEmpsByDept = () => {
                     },
                     function(err, res){
                         if(err) throw err;
-                        console.log(res);
+                        console.log('\n')
+                        console.table(res)
                         connection.end()
                     }
                 );
@@ -223,7 +230,8 @@ managerEmps = manager =>{
         },
         function(err, res){
             if(err) throw err;
-            console.log(res);
+            console.log('\n')
+            console.table(res)
             connection.end()
         }
     );
@@ -248,7 +256,6 @@ viewEmpsByManager = () => {
         function(err, res){
             if(err) throw err;
             const man = res;
-            console.log("our res is: ", res);
             inquirer.prompt(
                 [{
                     type: 'list',
@@ -272,7 +279,8 @@ viewEmpsByManager = () => {
                             "select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where emp.id ='"+manager+"'",
                             function(err, res1){
                                 if(err) throw err;
-                                console.log(res1);
+                                console.log('\n')
+                                console.table(res)
                                 connection.end();
                             }
                         );
@@ -376,7 +384,6 @@ addEmployee = () => {
                     "select id from employee where first_name ='"+first+"' and last_name = '"+last+"'",
                     function(err, res){
                         if(err) throw err;
-                        console.log(res[0].id);
                         manId = res[0].id;
                         connection.query(
                             "Insert into employee (first_name, last_name, role_id, manager_id) values ('"+empData.firstN+"', '"+empData.lastN+"', "+roleId+", "+manId+")",
@@ -715,7 +722,8 @@ viewBudget = () => {
                     },
                     function(err, res){
                         if(err) throw err;
-                        console.log(res);
+                        console.log('\n')
+                        console.table(res)
                         connection.end();
                     }
                 );
