@@ -10,7 +10,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false}));
 app.use(express.json());
 
-const dbPassword = '';
+const dbPassword = 'Mar00nday03';
 
 const connection = mysql.createConnection({
     host: 'localhost',
@@ -25,7 +25,60 @@ const connection = mysql.createConnection({
 connection.connect(err => {
     if (err) throw err;
 });
-
+determineAction = decision => {
+    switch(decision){
+        case 'View All Employees':
+            viewAllEmps()
+            .then(menuQuestions());
+            break;
+        case 'View All Departments':
+            viewAllDeps()
+            .then(menuQuestions());
+            break;
+        case 'View All Roles':
+            viewAllRoles()
+            .then(menuQuestions());
+            break;
+        case 'View All Employees By Department':
+            viewEmpsByDept()
+            .then(menuQuestions());
+            break;
+        case 'View All Employees By Manager':
+            viewEmpsByManager()
+            .then(menuQuestions());
+            break;
+        case 'Add Employee':
+            addEmployee()
+            .then(menuQuestions());
+            break;
+        case 'Add Department':
+            addDepartment()
+            .then(menuQuestions());
+            break;
+        case 'Add Role':
+            addRole()
+            .then(menuQuestions());
+            break;
+        case 'Update Employee Role':
+            updateRole()
+            .then(menuQuestions());
+            break;
+        case 'Update Employee Manager':
+            updateManager()
+            .then(menuQuestions());
+            break;
+        case 'View Budget By Department':
+            viewBudget()
+            .then(menuQuestions());
+            break;
+        case 'Remove Employee':
+            removeEmp()
+            .then(menuQuestions());
+            break;
+        default: break;
+    }
+    //menuQuestions();
+} 
 menuQuestions = () => {
     const connection = mysql.createConnection({
         host: 'localhost',
@@ -48,52 +101,61 @@ menuQuestions = () => {
         choices: ['View All Employees', 'View All Departments', 'View All Roles', 'View All Employees By Department', 'View All Employees By Manager', 'Add Employee', 'Add Role', 'Add Department', 'Remove Employee', 'Update Employee Role', 'Update Employee Manager', 'View Budget By Department']
     }])
     .then(choice => {
-        determineAction(choice.action)   
+        switch(choice.action){
+            case 'View All Employees':
+                viewAllEmps()
+               // .then(menuQuestions());
+                break;
+            case 'View All Departments':
+                viewAllDeps()
+                //.then(menuQuestions());
+                break;
+            case 'View All Roles':
+                viewAllRoles()
+                //.then(menuQuestions());
+                break;
+            case 'View All Employees By Department':
+                viewEmpsByDept()
+              //  .then(menuQuestions());
+                break;
+            case 'View All Employees By Manager':
+                viewEmpsByManager()
+            //    .then(menuQuestions());
+                break;
+            case 'Add Employee':
+                addEmployee()
+            //    .then(menuQuestions());
+                break;
+            case 'Add Department':
+                addDepartment()
+             //   .then(menuQuestions());
+                break;
+            case 'Add Role':
+                addRole()
+             //   .then(menuQuestions());
+                break;
+            case 'Update Employee Role':
+                updateRole()
+               // .then(menuQuestions());
+                break;
+            case 'Update Employee Manager':
+                updateManager()
+               // .then(menuQuestions());
+                break;
+            case 'View Budget By Department':
+                viewBudget()
+                //.then(menuQuestions());
+                break;
+            case 'Remove Employee':
+                removeEmp()
+                // .then(menuQuestions());
+                break;
+            default: break;
+        } 
     })
 };
 
-determineAction = decision => {
-    switch(decision){
-        case 'View All Employees':
-            viewAllEmps();
-            break;
-        case 'View All Departments':
-            viewAllDeps();
-            break;
-        case 'View All Roles':
-            viewAllRoles();
-            break;
-        case 'View All Employees By Department':
-            viewEmpsByDept();
-            break;
-        case 'View All Employees By Manager':
-            viewEmpsByManager();
-            break;
-        case 'Add Employee':
-            addEmployee();
-            break;
-        case 'Add Department':
-            addDepartment();
-            break;
-        case 'Add Role':
-            addRole();
-            break;
-        case 'Update Employee Role':
-            updateRole();
-            break;
-        case 'Update Employee Manager':
-            updateManager();
-            break;
-        case 'View Budget By Department':
-            viewBudget();
-            break;
-        case 'Remove Employee':
-            removeEmp();
-            break;
-        default: break;
-    }
-    menuQuestions();
-} 
+
 
 
 
@@ -120,6 +182,7 @@ viewAllEmps = () => {
             //connection.writeTextRow(rows)
            // console.log(data);
             connection.end()
+            menuQuestions();
         }
     );
 };
@@ -146,6 +209,7 @@ viewAllDeps = () => {
             console.log('\n')
             console.table(res)
             connection.end();
+            menuQuestions();
         }
     )
 }
@@ -171,6 +235,7 @@ viewAllRoles = () => {
             console.log('\n')
             console.table(res)
             connection.end()
+            menuQuestions();
         }
     )
 }
@@ -213,6 +278,7 @@ viewEmpsByDept = () => {
                         console.log('\n')
                         console.table(res)
                         connection.end()
+                        menuQuestions();
                     }
                 );
             }
@@ -233,6 +299,7 @@ managerEmps = manager =>{
             console.log('\n')
             console.table(res)
             connection.end()
+            menuQuestions();
         }
     );
 };
@@ -282,6 +349,7 @@ viewEmpsByManager = () => {
                                 console.log('\n')
                                 console.table(res)
                                 connection.end();
+                                menuQuestions();
                             }
                         );
                      }
@@ -390,6 +458,7 @@ addEmployee = () => {
                             function(err, res){
                                 if(err) throw err
                                 connection.end()
+                                menuQuestions();
                             }
                         );
                     }
@@ -428,6 +497,7 @@ addDepartment = () =>{
                 if(err) throw err;
                 console.log("Succesfully added new department!");
                 connection.end();
+                menuQuestions();
             }
         )
     });
@@ -496,6 +566,7 @@ addRole = () =>{
                     function(err, res){
                         if(err) throw err;
                         connection.end();
+                        menuQuestions();
                     }
                 )
             }
@@ -574,6 +645,7 @@ updateRole = () =>{
                                         if(err) throw err;
                                         console.log("Successfully updated employee's role!")
                                         connection.end()
+                                        menuQuestions()
                                     }
                                 )
                                 connection.end();
@@ -675,6 +747,7 @@ updateManager = () =>{
                                         function(err, res){
                                             if(err) throw err;
                                                 connection.end();
+                                                menuQuestions();
                                         }
                                     )
                                 }
@@ -725,6 +798,7 @@ viewBudget = () => {
                         console.log('\n')
                         console.table(res)
                         connection.end();
+                        menuQuestions()
                     }
                 );
             }
@@ -784,7 +858,8 @@ removeEmp = () =>{
                     "delete from employee where first_name = '"+first+"' and last_name = '"+last+"'",
                     function(err, res){
                         if(err) throw err;
-                        connection.end();              
+                        connection.end();    
+                        menuQuestions();          
                     }
                 )
             })
