@@ -11,7 +11,7 @@ const app = express();
 app.use(express.urlencoded({ extended: false}));
 app.use(express.json());
 
-const dbPassword = 'Mar00nday03';
+const dbPassword = '';
 
 const connection = mysql.createConnection({
     host: 'localhost',
