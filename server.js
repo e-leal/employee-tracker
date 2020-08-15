@@ -2,6 +2,7 @@ const mysql = require('mysql2');
 const index = require('./lib/index')
 const express = require('express');
 const inquirer = require('inquirer');
+const cTable =  require('console.table');
 const fs = require('fs');
 const PORT = process.env || 3001;
 const app = express();
@@ -174,13 +175,12 @@ viewAllEmps = () => {
         if (err) throw err;
     });
     const query = connection.query(
-        "Select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id",
+        "Select employee.id, employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id",
         function(err, res){
             if(err) throw err;
             console.log('\n')
-            console.table(res)
-            //connection.writeTextRow(rows)
-           // console.log(data);
+            const table = cTable.getTable(res)
+            console.log(table)
             connection.end()
             menuQuestions();
         }
@@ -201,13 +201,13 @@ viewAllDeps = () => {
     connection.connect(err => {
         if (err) throw err;
     });
-    const option = {sql:"select name from department", rowsAsArray: true};
     const query = connection.query(
-        option, 
+        "select id, name from department", 
         function(err, res){
             if(err) throw err;
             console.log('\n')
-            console.table(res)
+            const table = cTable.getTable(res)
+            console.log(table)
             connection.end();
             menuQuestions();
         }
@@ -229,11 +229,12 @@ viewAllRoles = () => {
         if (err) throw err;
     });
     const query = connection.query(
-        "Select title, salary, name from role join department on department_id = department.id",
+        "Select role.id, title, salary, name from role join department on department_id = department.id",
         function(err, res){
             if(err) throw err;
             console.log('\n')
-            console.table(res)
+            const table = cTable.getTable(res)
+            console.log(table)
             connection.end()
             menuQuestions();
         }
@@ -269,14 +270,15 @@ viewEmpsByDept = () => {
             )
             .then(selectDep => {
                 connection.query(
-                    "select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where ?",
+                    "select employee.id, employee.id, employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where ?",
                     {
                         name: selectDep.deptChoice,
                     },
                     function(err, res){
                         if(err) throw err;
                         console.log('\n')
-                        console.table(res)
+                        const table = cTable.getTable(res)
+                        console.log(table)
                         connection.end()
                         menuQuestions();
                     }
@@ -287,22 +289,6 @@ viewEmpsByDept = () => {
     );
 };
 
-managerEmps = manager =>{
-    const manId = manager;
-    connection.query(
-        "select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where employee.?",
-        {
-            manager_id: manager
-        },
-        function(err, res){
-            if(err) throw err;
-            console.log('\n')
-            console.table(res)
-            connection.end()
-            menuQuestions();
-        }
-    );
-};
 
 viewEmpsByManager = () => {
     const connection = mysql.createConnection({
@@ -338,15 +324,14 @@ viewEmpsByManager = () => {
                      "select id from employee where first_name = '"+first+"' and last_name = '"+last+"'",
                      function(err, res){
                          if(err) throw err;
-                         
                          const manager = res[0].id;
                          connection.query(
-                            "select employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where emp.id ='"+manager+"'",
+                            "select employee.id, employee.first_name, employee.last_name, title, name, salary, CONCAT(emp.first_name, ' ', emp.last_name) Manager  from employee join role on employee.role_id = role.id join department on department.id = role.department_id left join employee emp on employee.manager_id = emp.id where emp.id ='"+manager+"'",
                             function(err, res1){
                                 if(err) throw err;
                                 console.log('\n')
-                                console.log("printing out our employee by manager table \n")
-                                console.table(res1)
+                                const table = cTable.getTable(res1)
+                                console.log(table)
                                 connection.end();
                                 menuQuestions();
                             }
@@ -383,8 +368,6 @@ addEmployee = () => {
             for( let i = 0; i < res.length; i++){
                 roles.push(res[i].title);
             }
-           // console.log("our available titles ", roles);
-           // connection.end();
     })
     connection.query(
         "select distinct(concat(emp1.first_name, ' ', emp1.last_name) ) name from employee emp1 inner join employee emp2 on emp1.id = emp2.manager_id where emp1.id = emp2.manager_id",
@@ -393,7 +376,6 @@ addEmployee = () => {
             for(let i = 0; i < res.length; i++){
                 manList.push(res[i].name);
             }
-           // connection.end();
         }
     )
     console.log("our available roles are: ",roles);
@@ -463,10 +445,7 @@ addEmployee = () => {
                     }
                 )
             }
-        );
-        
-        //console.log("Insert into employee (first_name, last_name, role_id, manager_id) values ('"+empData.firstN+"', '"+empData.lastN+"', "+roleId+", "+manId+")");
-        
+        );        
     });
 }
 
@@ -795,7 +774,8 @@ viewBudget = () => {
                     function(err, res){
                         if(err) throw err;
                         console.log('\n')
-                        console.table(res)
+                        const table = cTable.getTable(res)
+                        console.log(table)
                         connection.end();
                         menuQuestions()
                     }
